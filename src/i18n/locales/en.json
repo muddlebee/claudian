@@ -268,10 +268,10 @@
       "desc": "Open chat panel as a main tab in the center editor area instead of the right sidebar"
     },
     "cliPath": {
-      "name": "Claude CLI path",
-      "desc": "Custom path to Claude Code CLI. Leave empty for auto-detection.",
-      "descWindows": "For the native installer, use claude.exe. For npm/pnpm/yarn or other package manager installs, use the cli.js path (not claude.cmd).",
-      "descUnix": "Paste the output of \"which claude\" — works for both native and npm/pnpm/yarn installs.",
+      "name": "Codex CLI path",
+      "desc": "Custom path to Codex CLI. Leave empty to use PATH lookup.",
+      "descWindows": "For the native installer, use codex.exe.",
+      "descUnix": "Paste the output of \"which codex\".",
       "validation": {
         "notExist": "Path does not exist",
         "isDirectory": "Path is a directory, not a file"

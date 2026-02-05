@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 
-import type { ApprovalCallbackOptions, ClaudianService } from '../../../core/agent';
+import type { ApprovalCallbackOptions } from '../../../core/agent';
+import type { CodexCliService } from '../../../core/cli';
 import { detectBuiltInCommand } from '../../../core/commands';
 import { TOOL_EXIT_PLAN_MODE } from '../../../core/tools/toolNames';
 import type { ApprovalDecision, ChatMessage, ExitPlanModeDecision } from '../../../core/types';
@@ -56,7 +57,7 @@ export interface InputControllerDeps {
   getInputContainerEl: () => HTMLElement;
   generateId: () => string;
   resetInputHeight: () => void;
-  getAgentService?: () => ClaudianService | null;
+  getAgentService?: () => CodexCliService | null;
   getSubagentManager: () => SubagentManager;
   /** Returns true if ready. */
   ensureServiceInitialized?: () => Promise<boolean>;
@@ -75,7 +76,7 @@ export class InputController {
     this.deps = deps;
   }
 
-  private getAgentService(): ClaudianService | null {
+  private getAgentService(): CodexCliService | null {
     return this.deps.getAgentService?.() ?? null;
   }
 

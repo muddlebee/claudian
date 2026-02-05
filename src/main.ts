@@ -32,6 +32,7 @@ import { type InlineEditContext, InlineEditModal } from './features/inline-edit/
 import { ClaudianSettingTab } from './features/settings/ClaudianSettings';
 import { setLocale } from './i18n';
 import { ClaudeCliResolver } from './utils/claudeCli';
+import { CodexCliResolver } from './utils/codexCli';
 import { buildCursorContext } from './utils/editor';
 import { getCurrentModelFromEnvironment, getModelsFromEnvironment, parseEnvironmentVariables } from './utils/env';
 import { getVaultPath } from './utils/path';
@@ -48,6 +49,7 @@ export default class ClaudianPlugin extends Plugin {
   agentManager: AgentManager;
   storage: StorageService;
   cliResolver: ClaudeCliResolver;
+  codexCliResolver: CodexCliResolver;
   private conversations: Conversation[] = [];
   private runtimeEnvironmentVariables = '';
 
@@ -55,6 +57,7 @@ export default class ClaudianPlugin extends Plugin {
     await this.loadSettings();
 
     this.cliResolver = new ClaudeCliResolver();
+    this.codexCliResolver = new CodexCliResolver();
 
     // Initialize MCP manager (shared for agent + UI)
     this.mcpManager = new McpServerManager(this.storage.mcp);
@@ -470,6 +473,13 @@ export default class ClaudianPlugin extends Plugin {
     return this.cliResolver.resolve(
       this.settings.claudeCliPathsByHost,  // Per-device paths (preferred)
       this.settings.claudeCliPath,          // Legacy path (fallback)
+      this.getActiveEnvironmentVariables()
+    );
+  }
+
+  getResolvedCodexCliPath(): string | null {
+    return this.codexCliResolver.resolve(
+      this.settings.codexCliPathsByHost,
       this.getActiveEnvironmentVariables()
     );
   }

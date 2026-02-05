@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 
-import type { ClaudianService } from '../../../core/agent';
+import type { CodexCliService } from '../../../core/cli';
 import type { McpServerManager } from '../../../core/mcp';
 import type { SlashCommand } from '../../../core/types';
 import { t } from '../../../i18n';
@@ -94,7 +94,6 @@ export class TabManager implements TabManagerInterface {
 
     const tab = createTab({
       plugin: this.plugin,
-      mcpManager: this.mcpManager,
       containerEl: this.containerEl,
       conversation: conversation ?? undefined,
       tabId,
@@ -124,7 +123,6 @@ export class TabManager implements TabManagerInterface {
       tab,
       this.plugin,
       this.view,
-      this.mcpManager,
       (forkContext) => this.handleForkRequest(forkContext),
       (conversationId) => this.openConversation(conversationId),
     );
@@ -540,7 +538,7 @@ export class TabManager implements TabManagerInterface {
 
     try {
       // initializeTabService() handles session ID resolution from tab.conversationId
-      await initializeTabService(activeTab, this.plugin, this.mcpManager);
+      await initializeTabService(activeTab, this.plugin);
       setupServiceCallbacks(activeTab, this.plugin);
     } catch {
       // Non-fatal - service will be initialized on first query
@@ -571,11 +569,11 @@ export class TabManager implements TabManagerInterface {
   // ============================================
 
   /**
-   * Broadcasts a function call to all tabs' ClaudianService instances.
+   * Broadcasts a function call to all tabs' Codex CLI services.
    * Used by settings managers to apply configuration changes to all tabs.
    * @param fn Function to call on each service.
    */
-  async broadcastToAllTabs(fn: (service: ClaudianService) => Promise<void>): Promise<void> {
+  async broadcastToAllTabs(fn: (service: CodexCliService) => Promise<void>): Promise<void> {
     const promises: Promise<void>[] = [];
 
     for (const tab of this.tabs.values()) {

@@ -1,6 +1,6 @@
 import { Notice, setIcon } from 'obsidian';
 
-import type { ClaudianService } from '../../../core/agent';
+import type { CodexCliService } from '../../../core/cli';
 import type { Conversation } from '../../../core/types';
 import { t } from '../../../i18n';
 import type ClaudianPlugin from '../../../main';
@@ -36,7 +36,7 @@ export interface ConversationControllerDeps {
   clearQueuedMessage: () => void;
   getTitleGenerationService: () => TitleGenerationService | null;
   getStatusPanel: () => StatusPanel | null;
-  getAgentService?: () => ClaudianService | null;
+  getAgentService?: () => CodexCliService | null;
 }
 
 type SaveOptions = {
@@ -52,7 +52,7 @@ export class ConversationController {
     this.callbacks = callbacks;
   }
 
-  private getAgentService(): ClaudianService | null {
+  private getAgentService(): CodexCliService | null {
     return this.deps.getAgentService?.() ?? null;
   }
 

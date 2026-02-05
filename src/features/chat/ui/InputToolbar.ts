@@ -890,17 +890,21 @@ export class ContextUsageMeter {
 
 export function createInputToolbar(
   parentEl: HTMLElement,
-  callbacks: ToolbarCallbacks
+  callbacks: ToolbarCallbacks,
+  options: { showModelSelector?: boolean; showThinkingBudget?: boolean } = {}
 ): {
-  modelSelector: ModelSelector;
-  thinkingBudgetSelector: ThinkingBudgetSelector;
+  modelSelector: ModelSelector | null;
+  thinkingBudgetSelector: ThinkingBudgetSelector | null;
   contextUsageMeter: ContextUsageMeter | null;
   externalContextSelector: ExternalContextSelector;
   mcpServerSelector: McpServerSelector;
   permissionToggle: PermissionToggle;
 } {
-  const modelSelector = new ModelSelector(parentEl, callbacks);
-  const thinkingBudgetSelector = new ThinkingBudgetSelector(parentEl, callbacks);
+  const showModelSelector = options.showModelSelector ?? true;
+  const showThinkingBudget = options.showThinkingBudget ?? true;
+
+  const modelSelector = showModelSelector ? new ModelSelector(parentEl, callbacks) : null;
+  const thinkingBudgetSelector = showThinkingBudget ? new ThinkingBudgetSelector(parentEl, callbacks) : null;
   const contextUsageMeter = new ContextUsageMeter(parentEl);
   const externalContextSelector = new ExternalContextSelector(parentEl, callbacks);
   const mcpServerSelector = new McpServerSelector(parentEl);

@@ -1,6 +1,6 @@
 import type { Component, WorkspaceLeaf } from 'obsidian';
 
-import type { ClaudianService } from '../../../core/agent';
+import type { CodexCliService } from '../../../core/cli';
 import type { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import type {
   ConversationController,
@@ -32,8 +32,8 @@ import type {
  * Default number of tabs allowed.
  *
  * Set to 3 to balance usability with resource usage:
- * - Each tab has its own ClaudianService and persistent query
- * - More tabs = more memory and potential SDK processes
+ * - Each tab has its own Codex CLI service instance
+ * - More tabs = more memory and potential CLI processes
  * - 3 tabs allows multi-tasking without excessive overhead
  */
 export const DEFAULT_MAX_TABS = 3;
@@ -177,8 +177,8 @@ export interface TabData {
   /** Conversation ID bound to this tab (null for new/empty tabs). */
   conversationId: string | null;
 
-  /** Per-tab ClaudianService instance for independent streaming. */
-  service: ClaudianService | null;
+  /** Per-tab Codex CLI service instance for independent streaming. */
+  service: CodexCliService | null;
 
   /** Whether the service has been initialized (lazy start). */
   serviceInitialized: boolean;

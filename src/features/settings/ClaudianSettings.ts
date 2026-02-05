@@ -636,10 +636,10 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     cliPathSetting.addText((text) => {
       const placeholder = process.platform === 'win32'
-        ? 'D:\\nodejs\\node_global\\node_modules\\@anthropic-ai\\claude-code\\cli.js'
-        : '/usr/local/lib/node_modules/@anthropic-ai/claude-code/cli.js';
+        ? 'C:\\Program Files\\Codex\\codex.exe'
+        : '/usr/local/bin/codex';
 
-      const currentValue = this.plugin.settings.claudeCliPathsByHost?.[hostnameKey] || '';
+      const currentValue = this.plugin.settings.codexCliPathsByHost?.[hostnameKey] || '';
 
       text
         .setPlaceholder(placeholder)
@@ -656,12 +656,12 @@ export class ClaudianSettingTab extends PluginSettingTab {
           }
 
           const trimmed = value.trim();
-          if (!this.plugin.settings.claudeCliPathsByHost) {
-            this.plugin.settings.claudeCliPathsByHost = {};
+          if (!this.plugin.settings.codexCliPathsByHost) {
+            this.plugin.settings.codexCliPathsByHost = {};
           }
-          this.plugin.settings.claudeCliPathsByHost[hostnameKey] = trimmed;
+          this.plugin.settings.codexCliPathsByHost[hostnameKey] = trimmed;
           await this.plugin.saveSettings();
-          this.plugin.cliResolver?.reset();
+          this.plugin.codexCliResolver?.reset();
           const view = this.plugin.getView();
           await view?.getTabManager()?.broadcastToAllTabs(
             (service) => Promise.resolve(service.cleanup())

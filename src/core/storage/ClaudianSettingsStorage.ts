@@ -94,6 +94,7 @@ export class ClaudianSettingsStorage {
 
     const blockedCommands = normalizeBlockedCommands(stored.blockedCommands);
     const hostnameCliPaths = normalizeHostnameCliPaths(stored.claudeCliPathsByHost);
+    const codexHostnameCliPaths = normalizeHostnameCliPaths(stored.codexCliPathsByHost);
     const legacyCliPath = typeof stored.claudeCliPath === 'string' ? stored.claudeCliPath : '';
 
     return {
@@ -102,6 +103,7 @@ export class ClaudianSettingsStorage {
       blockedCommands,
       claudeCliPath: legacyCliPath,
       claudeCliPathsByHost: hostnameCliPaths,
+      codexCliPathsByHost: codexHostnameCliPaths,
     } as StoredClaudianSettings;
   }
 

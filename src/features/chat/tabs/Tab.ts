@@ -1,8 +1,7 @@
 import type { Component } from 'obsidian';
 import { Notice } from 'obsidian';
 
-import { ClaudianService } from '../../../core/agent';
-import type { McpServerManager } from '../../../core/mcp';
+import { CodexCliService } from '../../../core/cli';
 import type { ChatMessage, ClaudeModel, Conversation, PermissionMode, SlashCommand, ThinkingBudget } from '../../../core/types';
 import { DEFAULT_CLAUDE_MODELS, DEFAULT_THINKING_BUDGET, getContextWindowSize } from '../../../core/types';
 import { t } from '../../../i18n';
@@ -37,7 +36,6 @@ import { generateTabId, TEXTAREA_MAX_HEIGHT_PERCENT, TEXTAREA_MIN_MAX_HEIGHT } f
 
 export interface TabCreateOptions {
   plugin: ClaudianPlugin;
-  mcpManager: McpServerManager;
 
   containerEl: HTMLElement;
   conversation?: Conversation;
@@ -226,7 +224,7 @@ function buildTabDOM(contentEl: HTMLElement): TabDOMElements {
 }
 
 /**
- * Initializes the tab's ClaudianService (lazy initialization).
+ * Initializes the tab's CodexCliService (lazy initialization).
  * Call this when the tab becomes active or when the first message is sent.
  *
  * Session ID resolution:
@@ -240,19 +238,18 @@ function buildTabDOM(contentEl: HTMLElement): TabDOMElements {
  */
 export async function initializeTabService(
   tab: TabData,
-  plugin: ClaudianPlugin,
-  mcpManager: McpServerManager
+  plugin: ClaudianPlugin
 ): Promise<void> {
   if (tab.serviceInitialized) {
     return;
   }
 
-  let service: ClaudianService | null = null;
+  let service: CodexCliService | null = null;
   let unsubscribeReadyState: (() => void) | null = null;
 
   try {
-    // Create per-tab ClaudianService
-    service = new ClaudianService(plugin, mcpManager);
+    // Create per-tab Codex CLI service
+    service = new CodexCliService(plugin);
     unsubscribeReadyState = service.onReadyStateChange((ready) => {
       tab.ui.modelSelector?.setReady(ready);
     });
@@ -468,7 +465,7 @@ function initializeInputToolbar(tab: TabData, plugin: ClaudianPlugin): void {
       await plugin.saveSettings();
       dom.inputWrapper.toggleClass('claudian-input-plan-mode', mode === 'plan');
     },
-  });
+  }, { showModelSelector: false, showThinkingBudget: false });
 
   tab.ui.modelSelector = toolbarComponents.modelSelector;
   tab.ui.thinkingBudgetSelector = toolbarComponents.thinkingBudgetSelector;
@@ -720,7 +717,6 @@ export function initializeTabControllers(
   tab: TabData,
   plugin: ClaudianPlugin,
   component: Component,
-  mcpManager: McpServerManager,
   forkRequestCallback?: (forkContext: ForkContext) => Promise<void>,
   openConversation?: (conversationId: string) => Promise<void>,
 ): void {
@@ -843,7 +839,7 @@ export function initializeTabControllers(
         return true;
       }
       try {
-        await initializeTabService(tab, plugin, mcpManager);
+        await initializeTabService(tab, plugin);
         setupServiceCallbacks(tab, plugin);
         return true;
       } catch {
