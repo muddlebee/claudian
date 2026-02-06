@@ -1,6 +1,6 @@
 import { Notice, setIcon } from 'obsidian';
 
-import type { CodexCliService } from '../../../core/cli';
+import type { ICliService } from '../../../core/cli';
 import type { Conversation } from '../../../core/types';
 import { t } from '../../../i18n';
 import type ClaudianPlugin from '../../../main';
@@ -36,7 +36,7 @@ export interface ConversationControllerDeps {
   clearQueuedMessage: () => void;
   getTitleGenerationService: () => TitleGenerationService | null;
   getStatusPanel: () => StatusPanel | null;
-  getAgentService?: () => CodexCliService | null;
+  getAgentService?: () => ICliService | null;
 }
 
 type SaveOptions = {
@@ -52,7 +52,7 @@ export class ConversationController {
     this.callbacks = callbacks;
   }
 
-  private getAgentService(): CodexCliService | null {
+  private getAgentService(): ICliService | null {
     return this.deps.getAgentService?.() ?? null;
   }
 
@@ -380,6 +380,12 @@ export class ConversationController {
     const agentService = this.getAgentService();
     if (!agentService) {
       new Notice(t('chat.rewind.failed', { error: 'Agent service not available' }));
+      return;
+    }
+
+    // Rewind is SDK-specific and not supported by CLI services
+    if (!agentService.rewind) {
+      new Notice(t('chat.rewind.failed', { error: 'Rewind not supported by CLI provider' }));
       return;
     }
 

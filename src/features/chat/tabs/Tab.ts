@@ -1,7 +1,7 @@
 import type { Component } from 'obsidian';
 import { Notice } from 'obsidian';
 
-import { CodexCliService } from '../../../core/cli';
+import { createCliService, type ICliService } from '../../../core/cli';
 import type { ChatMessage, ClaudeModel, Conversation, PermissionMode, SlashCommand, ThinkingBudget } from '../../../core/types';
 import { DEFAULT_CLAUDE_MODELS, DEFAULT_THINKING_BUDGET, getContextWindowSize } from '../../../core/types';
 import { t } from '../../../i18n';
@@ -119,6 +119,7 @@ export function createTab(options: TabCreateOptions): TabData {
       bangBashModeManager: null,
       contextUsageMeter: null,
       statusPanel: null,
+      cliProviderSelector: null,
     },
     dom,
     renderer: null,
@@ -244,13 +245,13 @@ export async function initializeTabService(
     return;
   }
 
-  let service: CodexCliService | null = null;
+  let service: ICliService | null = null;
   let unsubscribeReadyState: (() => void) | null = null;
 
   try {
-    // Create per-tab Codex CLI service
-    service = new CodexCliService(plugin);
-    unsubscribeReadyState = service.onReadyStateChange((ready) => {
+    // Create per-tab CLI service based on selected provider
+    service = createCliService(plugin);
+    unsubscribeReadyState = service.onReadyStateChange((ready: boolean) => {
       tab.ui.modelSelector?.setReady(ready);
     });
     tab.dom.eventCleanups.push(() => unsubscribeReadyState?.());
@@ -426,6 +427,7 @@ function initializeInputToolbar(tab: TabData, plugin: ClaudianPlugin): void {
       model: plugin.settings.model,
       thinkingBudget: plugin.settings.thinkingBudget,
       permissionMode: plugin.settings.permissionMode,
+      cliProvider: plugin.settings.cliProvider,
       show1MModel: plugin.settings.show1MModel,
     }),
     getEnvironmentVariables: () => plugin.getActiveEnvironmentVariables(),
@@ -465,10 +467,19 @@ function initializeInputToolbar(tab: TabData, plugin: ClaudianPlugin): void {
       await plugin.saveSettings();
       dom.inputWrapper.toggleClass('claudian-input-plan-mode', mode === 'plan');
     },
-  }, { showModelSelector: false, showThinkingBudget: false });
+    onCliProviderChange: async (provider) => {
+      plugin.settings.cliProvider = provider;
+      await plugin.saveSettings();
+      // Cleanup current service and reinitialize with new provider
+      tab.service?.cleanup();
+      tab.service = null;
+      tab.serviceInitialized = false;
+    },
+  }, { showModelSelector: false, showThinkingBudget: false, showCliProvider: true });
 
   tab.ui.modelSelector = toolbarComponents.modelSelector;
   tab.ui.thinkingBudgetSelector = toolbarComponents.thinkingBudgetSelector;
+  tab.ui.cliProviderSelector = toolbarComponents.cliProviderSelector;
   tab.ui.contextUsageMeter = toolbarComponents.contextUsageMeter;
   tab.ui.externalContextSelector = toolbarComponents.externalContextSelector;
   tab.ui.mcpServerSelector = toolbarComponents.mcpServerSelector;

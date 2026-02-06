@@ -1,6 +1,6 @@
 import type { Component, WorkspaceLeaf } from 'obsidian';
 
-import type { CodexCliService } from '../../../core/cli';
+import type { ICliService } from '../../../core/cli';
 import type { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import type {
   ConversationController,
@@ -16,6 +16,7 @@ import type { TitleGenerationService } from '../services/TitleGenerationService'
 import type { ChatState } from '../state';
 import type {
   BangBashModeManager,
+  CliProviderSelector,
   ContextUsageMeter,
   ExternalContextSelector,
   FileContextManager,
@@ -32,7 +33,7 @@ import type {
  * Default number of tabs allowed.
  *
  * Set to 3 to balance usability with resource usage:
- * - Each tab has its own Codex CLI service instance
+ * - Each tab has its own CLI service instance
  * - More tabs = more memory and potential CLI processes
  * - 3 tabs allows multi-tasking without excessive overhead
  */
@@ -131,6 +132,7 @@ export interface TabUIComponents {
   bangBashModeManager: BangBashModeManager | null;
   contextUsageMeter: ContextUsageMeter | null;
   statusPanel: StatusPanel | null;
+  cliProviderSelector: CliProviderSelector | null;
 }
 
 /**
@@ -177,8 +179,8 @@ export interface TabData {
   /** Conversation ID bound to this tab (null for new/empty tabs). */
   conversationId: string | null;
 
-  /** Per-tab Codex CLI service instance for independent streaming. */
-  service: CodexCliService | null;
+  /** Per-tab CLI service instance for independent streaming. */
+  service: ICliService | null;
 
   /** Whether the service has been initialized (lazy start). */
   serviceInitialized: boolean;

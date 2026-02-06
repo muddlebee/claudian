@@ -35,6 +35,7 @@ import { ClaudeCliResolver } from './utils/claudeCli';
 import { CodexCliResolver } from './utils/codexCli';
 import { buildCursorContext } from './utils/editor';
 import { getCurrentModelFromEnvironment, getModelsFromEnvironment, parseEnvironmentVariables } from './utils/env';
+import { KilocodeCliResolver } from './utils/kilocodeCli';
 import { getVaultPath } from './utils/path';
 import { deleteSDKSession, loadSDKSessionMessages, sdkSessionExists, type SDKSessionLoadResult } from './utils/sdkSession';
 
@@ -50,6 +51,7 @@ export default class ClaudianPlugin extends Plugin {
   storage: StorageService;
   cliResolver: ClaudeCliResolver;
   codexCliResolver: CodexCliResolver;
+  kilocodeCliResolver: KilocodeCliResolver;
   private conversations: Conversation[] = [];
   private runtimeEnvironmentVariables = '';
 
@@ -58,6 +60,7 @@ export default class ClaudianPlugin extends Plugin {
 
     this.cliResolver = new ClaudeCliResolver();
     this.codexCliResolver = new CodexCliResolver();
+    this.kilocodeCliResolver = new KilocodeCliResolver();
 
     // Initialize MCP manager (shared for agent + UI)
     this.mcpManager = new McpServerManager(this.storage.mcp);
@@ -480,6 +483,13 @@ export default class ClaudianPlugin extends Plugin {
   getResolvedCodexCliPath(): string | null {
     return this.codexCliResolver.resolve(
       this.settings.codexCliPathsByHost,
+      this.getActiveEnvironmentVariables()
+    );
+  }
+
+  getResolvedKilocodeCliPath(): string | null {
+    return this.kilocodeCliResolver.resolve(
+      this.settings.kilocodeCliPathsByHost,
       this.getActiveEnvironmentVariables()
     );
   }

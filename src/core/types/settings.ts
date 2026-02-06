@@ -117,6 +117,29 @@ export function getCliPlatformKey(): CliPlatformKey {
  */
 export type HostnameCliPaths = Record<string, string>;
 
+/** Supported CLI providers. */
+export const CLI_PROVIDERS = ['codex', 'kilocode', 'claude'] as const;
+export type CliProvider = typeof CLI_PROVIDERS[number];
+
+/** CLI provider display info. */
+export const CLI_PROVIDER_INFO: Record<CliProvider, { label: string; description: string; installCommand: string }> = {
+  codex: {
+    label: 'Codex CLI',
+    description: 'OpenAI Codex CLI for code generation',
+    installCommand: 'npm install -g @openai/codex',
+  },
+  kilocode: {
+    label: 'Kilo',
+    description: 'Kilo CLI with multi-model support',
+    installCommand: 'npm install -g kilo-code',
+  },
+  claude: {
+    label: 'Claude Code',
+    description: 'Anthropic Claude Code CLI',
+    installCommand: 'npm install -g @anthropic-ai/claude-code',
+  },
+};
+
 /** Permission mode for tool execution. */
 export type PermissionMode = 'yolo' | 'plan' | 'normal';
 
@@ -275,10 +298,14 @@ export interface ClaudianSettings {
   // Internationalization
   locale: Locale;  // UI language setting
 
+  // CLI provider
+  cliProvider: CliProvider;  // Active CLI provider (codex, kilocode, claude)
+
   // CLI paths
   claudeCliPath: string;  // Legacy: single CLI path (for backwards compatibility)
-  claudeCliPathsByHost: HostnameCliPaths;  // Per-device paths keyed by hostname (preferred)
+  claudeCliPathsByHost: HostnameCliPaths;  // Per-device Claude CLI paths keyed by hostname
   codexCliPathsByHost: HostnameCliPaths;  // Per-device Codex CLI paths keyed by hostname
+  kilocodeCliPathsByHost: HostnameCliPaths;  // Per-device Kilo Code CLI paths keyed by hostname
   loadUserClaudeSettings: boolean;  // Load ~/.claude/settings.json (may override permissions)
 
   // State (merged from data.json)
@@ -340,10 +367,14 @@ export const DEFAULT_SETTINGS: ClaudianSettings = {
   // Internationalization
   locale: 'en',  // Default to English
 
+  // CLI provider
+  cliProvider: 'codex',  // Default to Codex CLI
+
   // CLI paths
   claudeCliPath: '',  // Legacy field (empty = not migrated)
-  claudeCliPathsByHost: {},  // Per-device paths keyed by hostname
+  claudeCliPathsByHost: {},  // Per-device Claude CLI paths keyed by hostname
   codexCliPathsByHost: {},  // Per-device Codex CLI paths keyed by hostname
+  kilocodeCliPathsByHost: {},  // Per-device Kilo Code CLI paths keyed by hostname
   loadUserClaudeSettings: true,  // Default on for compatibility
 
   lastClaudeModel: 'haiku',

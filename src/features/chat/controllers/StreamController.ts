@@ -1,4 +1,4 @@
-import type { CodexCliService } from '../../../core/cli';
+import type { ICliService } from '../../../core/cli';
 import { extractResolvedAnswers, parseTodoInput } from '../../../core/tools';
 import { isWriteEditTool, skipsBlockedDetection, TOOL_AGENT_OUTPUT, TOOL_ASK_USER_QUESTION, TOOL_TASK, TOOL_TODO_WRITE, TOOL_WRITE } from '../../../core/tools/toolNames';
 import type { ChatMessage, StreamChunk, SubagentInfo, ToolCallInfo } from '../../../core/types';
@@ -33,7 +33,7 @@ export interface StreamControllerDeps {
   getFileContextManager: () => FileContextManager | null;
   updateQueueIndicator: () => void;
   /** Get the agent service from the tab. */
-  getAgentService?: () => CodexCliService | null;
+  getAgentService?: () => ICliService | null;
 }
 
 export class StreamController {

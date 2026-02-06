@@ -602,21 +602,8 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     const hostnameKey = getHostnameKey();
 
-    const platformDesc = process.platform === 'win32'
-      ? t('settings.cliPath.descWindows')
-      : t('settings.cliPath.descUnix');
-    const cliPathDescription = `${t('settings.cliPath.desc')} ${platformDesc}`;
-
-    const cliPathSetting = new Setting(containerEl)
-      .setName(`${t('settings.cliPath.name')} (${hostnameKey})`)
-      .setDesc(cliPathDescription);
-
-    const validationEl = containerEl.createDiv({ cls: 'claudian-cli-path-validation' });
-    validationEl.style.color = 'var(--text-error)';
-    validationEl.style.fontSize = '0.85em';
-    validationEl.style.marginTop = '-0.5em';
-    validationEl.style.marginBottom = '0.5em';
-    validationEl.style.display = 'none';
+    // CLI Providers Section
+    containerEl.createEl('h3', { text: `CLI Providers (${hostnameKey})` });
 
     const validatePath = (value: string): string | null => {
       const trimmed = value.trim();
@@ -634,13 +621,102 @@ export class ClaudianSettingTab extends PluginSettingTab {
       return null;
     };
 
-    cliPathSetting.addText((text) => {
-      const placeholder = process.platform === 'win32'
-        ? 'C:\\Program Files\\Codex\\codex.exe'
-        : '/usr/local/bin/codex';
+    // Codex CLI Path
+    this.renderCliPathSetting(containerEl, {
+      name: 'Codex CLI',
+      description: 'Path to Codex CLI executable. Leave empty for auto-detection.',
+      placeholder: process.platform === 'win32' ? 'C:\\Program Files\\Codex\\codex.exe' : '/usr/local/bin/codex',
+      getValue: () => this.plugin.settings.codexCliPathsByHost?.[hostnameKey] || '',
+      setValue: async (value) => {
+        if (!this.plugin.settings.codexCliPathsByHost) {
+          this.plugin.settings.codexCliPathsByHost = {};
+        }
+        this.plugin.settings.codexCliPathsByHost[hostnameKey] = value.trim();
+        await this.plugin.saveSettings();
+        this.plugin.codexCliResolver?.reset();
+      },
+      validatePath,
+      autoDetect: () => this.plugin.getResolvedCodexCliPath(),
+    });
 
-      const currentValue = this.plugin.settings.codexCliPathsByHost?.[hostnameKey] || '';
+    // Kilo Code CLI Path
+    this.renderCliPathSetting(containerEl, {
+      name: 'Kilo CLI',
+      description: 'Path to Kilo CLI executable. Leave empty for auto-detection.',
+      placeholder: process.platform === 'win32' ? 'C:\\Program Files\\kilo\\kilo.exe' : '/usr/local/bin/kilo',
+      getValue: () => this.plugin.settings.kilocodeCliPathsByHost?.[hostnameKey] || '',
+      setValue: async (value) => {
+        if (!this.plugin.settings.kilocodeCliPathsByHost) {
+          this.plugin.settings.kilocodeCliPathsByHost = {};
+        }
+        this.plugin.settings.kilocodeCliPathsByHost[hostnameKey] = value.trim();
+        await this.plugin.saveSettings();
+        this.plugin.kilocodeCliResolver?.reset();
+      },
+      validatePath,
+      autoDetect: () => this.plugin.getResolvedKilocodeCliPath(),
+    });
 
+    // Claude CLI Path
+    this.renderCliPathSetting(containerEl, {
+      name: 'Claude Code CLI',
+      description: 'Path to Claude Code CLI executable. Leave empty for auto-detection.',
+      placeholder: process.platform === 'win32' ? 'C:\\Program Files\\claude\\claude.exe' : '/usr/local/bin/claude',
+      getValue: () => this.plugin.settings.claudeCliPathsByHost?.[hostnameKey] || '',
+      setValue: async (value) => {
+        if (!this.plugin.settings.claudeCliPathsByHost) {
+          this.plugin.settings.claudeCliPathsByHost = {};
+        }
+        this.plugin.settings.claudeCliPathsByHost[hostnameKey] = value.trim();
+        await this.plugin.saveSettings();
+        this.plugin.cliResolver?.reset();
+      },
+      validatePath,
+      autoDetect: () => this.plugin.getResolvedClaudeCliPath(),
+    });
+  }
+
+  private renderCliPathSetting(
+    containerEl: HTMLElement,
+    options: {
+      name: string;
+      description: string;
+      placeholder: string;
+      getValue: () => string;
+      setValue: (value: string) => Promise<void>;
+      validatePath: (value: string) => string | null;
+      autoDetect: () => string | null;
+    }
+  ): void {
+    const { name, description, placeholder, getValue, setValue, validatePath, autoDetect } = options;
+
+    const setting = new Setting(containerEl)
+      .setName(name)
+      .setDesc(description);
+
+    const validationEl = containerEl.createDiv({ cls: 'claudian-cli-path-validation' });
+    validationEl.style.color = 'var(--text-error)';
+    validationEl.style.fontSize = '0.85em';
+    validationEl.style.marginTop = '-0.5em';
+    validationEl.style.marginBottom = '0.5em';
+    validationEl.style.display = 'none';
+
+    const currentValue = getValue();
+    const detectedPath = autoDetect();
+    const statusEl = containerEl.createDiv({ cls: 'claudian-cli-path-status' });
+    statusEl.style.fontSize = '0.85em';
+    statusEl.style.marginTop = '-0.5em';
+    statusEl.style.marginBottom = '0.5em';
+
+    if (detectedPath) {
+      statusEl.style.color = 'var(--text-success)';
+      statusEl.setText(`✓ Detected: ${detectedPath}`);
+    } else if (!currentValue) {
+      statusEl.style.color = 'var(--text-muted)';
+      statusEl.setText('Not detected. Install or set path manually.');
+    }
+
+    setting.addText((text) => {
       text
         .setPlaceholder(placeholder)
         .setValue(currentValue)
@@ -655,17 +731,20 @@ export class ClaudianSettingTab extends PluginSettingTab {
             text.inputEl.style.borderColor = '';
           }
 
-          const trimmed = value.trim();
-          if (!this.plugin.settings.codexCliPathsByHost) {
-            this.plugin.settings.codexCliPathsByHost = {};
+          await setValue(value);
+
+          // Update status after save
+          const newDetectedPath = autoDetect();
+          if (newDetectedPath) {
+            statusEl.style.color = 'var(--text-success)';
+            statusEl.setText(`✓ Detected: ${newDetectedPath}`);
+          } else if (!value.trim()) {
+            statusEl.style.color = 'var(--text-muted)';
+            statusEl.setText('Not detected. Install or set path manually.');
+          } else {
+            statusEl.style.color = 'var(--text-success)';
+            statusEl.setText(`✓ Using: ${value.trim()}`);
           }
-          this.plugin.settings.codexCliPathsByHost[hostnameKey] = trimmed;
-          await this.plugin.saveSettings();
-          this.plugin.codexCliResolver?.reset();
-          const view = this.plugin.getView();
-          await view?.getTabManager()?.broadcastToAllTabs(
-            (service) => Promise.resolve(service.cleanup())
-          );
         });
       text.inputEl.addClass('claudian-settings-cli-path-input');
       text.inputEl.style.width = '100%';
@@ -676,6 +755,30 @@ export class ClaudianSettingTab extends PluginSettingTab {
         validationEl.style.display = 'block';
         text.inputEl.style.borderColor = 'var(--text-error)';
       }
+    });
+
+    // Add auto-detect button
+    setting.addButton((button) => {
+      button
+        .setIcon('search')
+        .setTooltip('Auto-detect CLI path')
+        .onClick(async () => {
+          const detected = autoDetect();
+          if (detected) {
+            await setValue(detected);
+            // Refresh the display - find the text input in this setting
+            const textInput = setting.settingEl.querySelector('input') as HTMLInputElement;
+            if (textInput) {
+              textInput.value = detected;
+            }
+            statusEl.style.color = 'var(--text-success)';
+            statusEl.setText(`✓ Detected: ${detected}`);
+            validationEl.style.display = 'none';
+          } else {
+            statusEl.style.color = 'var(--text-warning)';
+            statusEl.setText('CLI not found in PATH. Please install or set path manually.');
+          }
+        });
     });
   }
 

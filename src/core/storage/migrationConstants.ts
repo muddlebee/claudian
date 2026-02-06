@@ -41,10 +41,14 @@ export const CLAUDIAN_ONLY_FIELDS = new Set([
   // UI settings
   'keyboardNavigation',
 
+  // CLI provider
+  'cliProvider',
+
   // CLI paths
   'claudeCliPath',
   'claudeCliPaths',
   'codexCliPathsByHost',
+  'kilocodeCliPathsByHost',
   'loadUserClaudeSettings',
 
   // Deprecated fields (removed completely, not migrated)
@@ -76,9 +80,11 @@ export const MIGRATABLE_CLAUDIAN_FIELDS = new Set([
   'envSnippets',
   'env', // Converted to environmentVariables
   'keyboardNavigation',
+  'cliProvider',
   'claudeCliPath',
   'claudeCliPaths',
   'codexCliPathsByHost',
+  'kilocodeCliPathsByHost',
   'loadUserClaudeSettings',
 ]);
 

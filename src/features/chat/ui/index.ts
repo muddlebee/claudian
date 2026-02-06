@@ -3,6 +3,7 @@ export { type FileContextCallbacks,FileContextManager } from './FileContext';
 export { type ImageContextCallbacks,ImageContextManager } from './ImageContext';
 export {
   type AddExternalContextResult,
+  CliProviderSelector,
   ContextUsageMeter,
   createInputToolbar,
   ExternalContextSelector,

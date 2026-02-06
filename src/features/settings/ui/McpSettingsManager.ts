@@ -21,7 +21,7 @@ export class McpSettingsManager {
     const views = this.plugin.getAllViews();
     for (const view of views) {
       await view.getTabManager()?.broadcastToAllTabs(
-        (service) => service.reloadMcpServers()
+        (service) => service.reloadMcpServers?.() ?? Promise.resolve()
       );
     }
   }

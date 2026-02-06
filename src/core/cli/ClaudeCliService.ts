@@ -1,14 +1,15 @@
 import { type ChildProcess,spawn } from 'child_process';
 
 import type ClaudianPlugin from '../../main';
-import { findCodexCLIPath } from '../../utils/codexCli';
 import { getEnhancedPath, parseEnvironmentVariables } from '../../utils/env';
 import { getVaultPath } from '../../utils/path';
+import { findClaudeCLIPath } from '../../utils/path';
 import type { ApprovalCallback, QueryOptions } from '../agent';
 import type { ChatMessage, ExitPlanModeCallback, ImageAttachment, SlashCommand, StreamChunk } from '../types';
 import type { AskUserQuestionCallback, EnsureReadyOptions, ICliService, ReadyStateCallback } from './ICliService';
 
-export class CodexCliService implements ICliService {
+/** Claude Code CLI service implementation using `claude` command. */
+export class ClaudeCliService implements ICliService {
   private plugin: ClaudianPlugin;
   private currentProcess: ChildProcess | null = null;
   private readyCallbacks = new Set<ReadyStateCallback>();
@@ -94,13 +95,14 @@ export class CodexCliService implements ICliService {
     }
 
     const envVars = parseEnvironmentVariables(this.plugin.getActiveEnvironmentVariables());
-    const configuredCliPath = this.plugin.getResolvedCodexCliPath();
+    const configuredCliPath = this.plugin.getResolvedClaudeCliPath();
     let enhancedPath = getEnhancedPath(envVars.PATH, configuredCliPath || undefined);
-    const detectedCliPath = configuredCliPath || findCodexCLIPath(enhancedPath);
+    const detectedCliPath = configuredCliPath || findClaudeCLIPath(enhancedPath);
+
     if (!detectedCliPath) {
       yield {
         type: 'error',
-        content: 'Codex CLI not found. Set the Codex CLI path in settings or add codex to PATH.',
+        content: 'Claude Code CLI not found. Install it with: npm install -g @anthropic-ai/claude-code\nThen set the path in settings or add claude to PATH.',
       };
       yield { type: 'done' };
       return;
@@ -118,7 +120,8 @@ export class CodexCliService implements ICliService {
 
     const promptWithHistory = this.buildPromptWithHistory(prompt, previousMessages);
     const command = detectedCliPath;
-    const args = ['exec', '--yolo', promptWithHistory];
+    // Use -p for prompt, --dangerously-skip-permissions for non-interactive mode
+    const args = ['-p', promptWithHistory, '--dangerously-skip-permissions'];
 
     let spawnError: unknown = null;
     let stderrBuffer = '';
@@ -157,7 +160,7 @@ export class CodexCliService implements ICliService {
       const errorMessage = spawnError instanceof Error ? spawnError.message : String(spawnError);
       yield { type: 'error', content: errorMessage };
     } else if (exitCode && exitCode !== 0) {
-      const message = stderrBuffer.trim() || `Codex CLI exited with code ${exitCode}.`;
+      const message = stderrBuffer.trim() || `Claude Code CLI exited with code ${exitCode}.`;
       yield { type: 'error', content: message };
     }
 

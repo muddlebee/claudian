@@ -95,15 +95,19 @@ export class ClaudianSettingsStorage {
     const blockedCommands = normalizeBlockedCommands(stored.blockedCommands);
     const hostnameCliPaths = normalizeHostnameCliPaths(stored.claudeCliPathsByHost);
     const codexHostnameCliPaths = normalizeHostnameCliPaths(stored.codexCliPathsByHost);
+    const kilocodeHostnameCliPaths = normalizeHostnameCliPaths(stored.kilocodeCliPathsByHost);
     const legacyCliPath = typeof stored.claudeCliPath === 'string' ? stored.claudeCliPath : '';
+    const cliProvider = typeof stored.cliProvider === 'string' ? stored.cliProvider : 'codex';
 
     return {
       ...this.getDefaults(),
       ...storedWithoutLegacy,
       blockedCommands,
+      cliProvider,
       claudeCliPath: legacyCliPath,
       claudeCliPathsByHost: hostnameCliPaths,
       codexCliPathsByHost: codexHostnameCliPaths,
+      kilocodeCliPathsByHost: kilocodeHostnameCliPaths,
     } as StoredClaudianSettings;
   }
 

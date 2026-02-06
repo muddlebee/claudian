@@ -5,11 +5,14 @@ import type { McpServerManager } from '../../../core/mcp';
 import type {
   ClaudeModel,
   ClaudianMcpServer,
+  CliProvider,
   PermissionMode,
   ThinkingBudget,
   UsageInfo
 } from '../../../core/types';
 import {
+  CLI_PROVIDER_INFO,
+  CLI_PROVIDERS,
   DEFAULT_CLAUDE_MODELS,
   THINKING_BUDGETS
 } from '../../../core/types';
@@ -22,6 +25,7 @@ export interface ToolbarSettings {
   model: ClaudeModel;
   thinkingBudget: ThinkingBudget;
   permissionMode: PermissionMode;
+  cliProvider: CliProvider;
   show1MModel?: boolean;
 }
 
@@ -29,6 +33,7 @@ export interface ToolbarCallbacks {
   onModelChange: (model: ClaudeModel) => Promise<void>;
   onThinkingBudgetChange: (budget: ThinkingBudget) => Promise<void>;
   onPermissionModeChange: (mode: PermissionMode) => Promise<void>;
+  onCliProviderChange: (provider: CliProvider) => Promise<void>;
   getSettings: () => ToolbarSettings;
   getEnvironmentVariables?: () => string;
 }
@@ -888,10 +893,104 @@ export class ContextUsageMeter {
   }
 }
 
+export class CliProviderSelector {
+  private container: HTMLElement;
+  private buttonEl: HTMLElement | null = null;
+  private dropdownEl: HTMLElement | null = null;
+  private callbacks: ToolbarCallbacks;
+
+  constructor(parentEl: HTMLElement, callbacks: ToolbarCallbacks) {
+    this.callbacks = callbacks;
+    this.container = parentEl.createDiv({ cls: 'claudian-cli-provider-selector' });
+    this.render();
+  }
+
+  private render(): void {
+    this.container.empty();
+
+    const currentProvider = this.callbacks.getSettings().cliProvider ?? 'codex';
+    const providerInfo = CLI_PROVIDER_INFO[currentProvider];
+
+    this.buttonEl = this.container.createDiv({
+      cls: 'claudian-cli-provider-button',
+    });
+
+    const labelEl = this.buttonEl.createSpan({ cls: 'claudian-cli-provider-label' });
+    labelEl.setText(providerInfo.label);
+
+    const arrowEl = this.buttonEl.createSpan({ cls: 'claudian-cli-provider-arrow' });
+    setIcon(arrowEl, 'chevron-down');
+
+    this.buttonEl.addEventListener('click', () => this.toggleDropdown());
+  }
+
+  private toggleDropdown(): void {
+    if (this.dropdownEl) {
+      this.hideDropdown();
+    } else {
+      this.showDropdown();
+    }
+  }
+
+  private showDropdown(): void {
+    if (this.dropdownEl) return;
+
+    const currentProvider = this.callbacks.getSettings().cliProvider ?? 'codex';
+
+    this.dropdownEl = this.container.createDiv({ cls: 'claudian-cli-provider-dropdown' });
+
+    for (const provider of CLI_PROVIDERS) {
+      const info = CLI_PROVIDER_INFO[provider];
+      const isActive = provider === currentProvider;
+
+      const item = this.dropdownEl.createDiv({
+        cls: `claudian-cli-provider-item${isActive ? ' active' : ''}`,
+      });
+
+      const labelContainer = item.createDiv({ cls: 'claudian-cli-provider-item-label' });
+      labelContainer.createSpan({ text: info.label });
+      labelContainer.createSpan({
+        cls: 'claudian-cli-provider-item-desc',
+        text: info.description,
+      });
+
+      if (isActive) {
+        const checkEl = item.createDiv({ cls: 'claudian-cli-provider-check' });
+        checkEl.innerHTML = CHECK_ICON_SVG;
+      }
+
+      item.addEventListener('click', async () => {
+        await this.callbacks.onCliProviderChange(provider);
+        this.hideDropdown();
+        this.render();
+      });
+    }
+
+    // Close dropdown when clicking outside
+    const closeHandler = (e: MouseEvent) => {
+      if (!this.container.contains(e.target as Node)) {
+        this.hideDropdown();
+        document.removeEventListener('click', closeHandler);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', closeHandler), 0);
+  }
+
+  private hideDropdown(): void {
+    this.dropdownEl?.remove();
+    this.dropdownEl = null;
+  }
+
+  destroy(): void {
+    this.hideDropdown();
+    this.container.remove();
+  }
+}
+
 export function createInputToolbar(
   parentEl: HTMLElement,
   callbacks: ToolbarCallbacks,
-  options: { showModelSelector?: boolean; showThinkingBudget?: boolean } = {}
+  options: { showModelSelector?: boolean; showThinkingBudget?: boolean; showCliProvider?: boolean } = {}
 ): {
   modelSelector: ModelSelector | null;
   thinkingBudgetSelector: ThinkingBudgetSelector | null;
@@ -899,16 +998,20 @@ export function createInputToolbar(
   externalContextSelector: ExternalContextSelector;
   mcpServerSelector: McpServerSelector;
   permissionToggle: PermissionToggle;
+  cliProviderSelector: CliProviderSelector | null;
 } {
   const showModelSelector = options.showModelSelector ?? true;
   const showThinkingBudget = options.showThinkingBudget ?? true;
+  const showCliProvider = options.showCliProvider ?? false;
 
-  const modelSelector = showModelSelector ? new ModelSelector(parentEl, callbacks) : null;
-  const thinkingBudgetSelector = showThinkingBudget ? new ThinkingBudgetSelector(parentEl, callbacks) : null;
+  // Show provider selector instead of model/thinking when in multi-CLI mode
+  const cliProviderSelector = showCliProvider ? new CliProviderSelector(parentEl, callbacks) : null;
+  const modelSelector = showModelSelector && !showCliProvider ? new ModelSelector(parentEl, callbacks) : null;
+  const thinkingBudgetSelector = showThinkingBudget && !showCliProvider ? new ThinkingBudgetSelector(parentEl, callbacks) : null;
   const contextUsageMeter = new ContextUsageMeter(parentEl);
   const externalContextSelector = new ExternalContextSelector(parentEl, callbacks);
   const mcpServerSelector = new McpServerSelector(parentEl);
   const permissionToggle = new PermissionToggle(parentEl, callbacks);
 
-  return { modelSelector, thinkingBudgetSelector, contextUsageMeter, externalContextSelector, mcpServerSelector, permissionToggle };
+  return { modelSelector, thinkingBudgetSelector, contextUsageMeter, externalContextSelector, mcpServerSelector, permissionToggle, cliProviderSelector };
 }

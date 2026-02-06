@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 
-import type { CodexCliService } from '../../../core/cli';
+import type { ICliService } from '../../../core/cli';
 import type { McpServerManager } from '../../../core/mcp';
 import type { SlashCommand } from '../../../core/types';
 import { t } from '../../../i18n';
@@ -573,7 +573,7 @@ export class TabManager implements TabManagerInterface {
    * Used by settings managers to apply configuration changes to all tabs.
    * @param fn Function to call on each service.
    */
-  async broadcastToAllTabs(fn: (service: CodexCliService) => Promise<void>): Promise<void> {
+  async broadcastToAllTabs(fn: (service: ICliService) => Promise<void>): Promise<void> {
     const promises: Promise<void>[] = [];
 
     for (const tab of this.tabs.values()) {

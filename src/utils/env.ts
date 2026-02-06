@@ -147,10 +147,29 @@ function getExtraBinaryPaths(): string[] {
       paths.push(path.join(home, '.asdf', 'bin'));
       paths.push(path.join(home, '.fnm'));
 
-      // NVM: use NVM_BIN if set, otherwise skip (NVM_BIN points to actual bin)
+      // NVM: use NVM_BIN if set, otherwise scan ~/.nvm/versions/node for installed versions
       const nvmBin = process.env.NVM_BIN;
       if (nvmBin) {
         paths.push(nvmBin);
+      } else {
+        // Scan nvm versions directory for installed Node versions
+        const nvmDir = process.env.NVM_DIR || path.join(home, '.nvm');
+        const versionsDir = path.join(nvmDir, 'versions', 'node');
+        try {
+          if (fs.existsSync(versionsDir)) {
+            const versions = fs.readdirSync(versionsDir);
+            // Sort versions to prefer latest (reverse alphabetical for semver-like strings)
+            versions.sort().reverse();
+            for (const version of versions) {
+              const binPath = path.join(versionsDir, version, 'bin');
+              if (fs.existsSync(binPath)) {
+                paths.push(binPath);
+              }
+            }
+          }
+        } catch {
+          // Ignore errors scanning nvm directory
+        }
       }
     }
 
