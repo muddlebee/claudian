@@ -3,7 +3,6 @@ import { ItemView, Notice, setIcon } from 'obsidian';
 
 import { VIEW_TYPE_CLAUDIAN } from '../../core/types';
 import type ClaudianPlugin from '../../main';
-import { LOGO_SVG } from './constants';
 import { TabBar, TabManager, updatePlanModeUI } from './tabs';
 import type { TabData, TabId } from './tabs/types';
 
@@ -21,7 +20,6 @@ export class ClaudianView extends ItemView {
   private viewContainerEl: HTMLElement | null = null;
   private headerEl: HTMLElement | null = null;
   private titleSlotEl: HTMLElement | null = null;
-  private logoEl: HTMLElement | null = null;
   private titleTextEl: HTMLElement | null = null;
   private headerActionsEl: HTMLElement | null = null;
   private headerActionsContent: HTMLElement | null = null;
@@ -70,7 +68,7 @@ export class ClaudianView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claudian';
+    return 'Chat';
   }
 
   getIcon(): string {
@@ -199,24 +197,11 @@ export class ClaudianView extends ItemView {
   private buildHeader(header: HTMLElement) {
     this.headerEl = header;
 
-    // Title slot container (logo + title or tabs)
+    // Title slot container (title or tabs)
     this.titleSlotEl = header.createDiv({ cls: 'claudian-title-slot' });
 
-    // Logo (hidden when 2+ tabs)
-    this.logoEl = this.titleSlotEl.createSpan({ cls: 'claudian-logo' });
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', LOGO_SVG.viewBox);
-    svg.setAttribute('width', LOGO_SVG.width);
-    svg.setAttribute('height', LOGO_SVG.height);
-    svg.setAttribute('fill', 'none');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', LOGO_SVG.path);
-    path.setAttribute('fill', LOGO_SVG.fill);
-    svg.appendChild(path);
-    this.logoEl.appendChild(svg);
-
     // Title text (hidden in header mode when 2+ tabs)
-    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Claudian', cls: 'claudian-title-text' });
+    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Chat', cls: 'claudian-title-text' });
 
     // Header actions container (for header mode - initially hidden)
     this.headerActionsEl = header.createDiv({ cls: 'claudian-header-actions claudian-header-actions-slot' });
@@ -392,12 +377,9 @@ export class ClaudianView extends ItemView {
     // Hide tab badges when only 1 tab, show when 2+
     this.tabBarContainerEl.style.display = showTabBar ? 'flex' : 'none';
 
-    // In header mode, badges replace logo/title in the same location
-    // In input mode, keep logo/title visible (badges are in nav row)
+    // In header mode, badges replace title in the same location
+    // In input mode, keep title visible (badges are in nav row)
     const hideBranding = showTabBar && isHeaderMode;
-    if (this.logoEl) {
-      this.logoEl.style.display = hideBranding ? 'none' : '';
-    }
     if (this.titleTextEl) {
       this.titleTextEl.style.display = hideBranding ? 'none' : '';
     }
