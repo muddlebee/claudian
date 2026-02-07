@@ -1,9 +1,12 @@
 # Claudian × Kilo: AI-Powered Writing in Obsidian
 
 
-**Obsidian Chat** is an open-source Obsidian plugin that embeds AI assistants directly into the note-taking workflow. We've integrated **Kilo CLI** as a first-class provider, bringing Kilo's multi-model capabilities to 1M+ Obsidian users.
+**Obsidian Chat** is an Obsidian plugin that embeds AI assistants directly into the note-taking workflow. We've integrated **Kilo CLI**, bringing Kilo's multi-model capabilities to 1M+ Obsidian users.
 
----
+**Demo** 👇
+
+![obs-chat](https://github.com/user-attachments/assets/d9cc2a70-5223-48b4-ab8b-21d850f38214)
+
 
 ## The Opportunity
 
@@ -18,8 +21,6 @@ Writers and knowledge workers want AI assistance **without leaving their flow**.
 - Switching to browser tabs (ChatGPT, Claude.ai)
 - Copy-pasting context manually
 - Losing the connection between AI output and their notes
-
----
 
 ## Solution: Kilo in the Obsidian Sidebar
 
@@ -54,7 +55,6 @@ Claudian embeds Kilo CLI as a sidebar chat interface:
 | **Conversation History** | Persist and resume sessions |
 | **Streaming Responses** | Real-time output as Kilo generates |
 
----
 
 ## Technical Architecture
 
