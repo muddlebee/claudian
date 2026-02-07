@@ -1,4 +1,4 @@
-# Claudian × Kilo: AI-Powered Writing in Obsidian
+# Obsidian × Kilo: AI-Powered Writing
 
 
 **Obsidian Chat** is an Obsidian plugin that embeds AI assistants directly into the note-taking workflow. We've integrated **Kilo CLI**, bringing Kilo's multi-model capabilities to 1M+ Obsidian users.
