@@ -24,7 +24,7 @@ Writers and knowledge workers want AI assistance **without leaving their flow**.
 
 ## Solution: Kilo in the Obsidian Sidebar
 
-Claudian embeds Kilo CLI as a sidebar chat interface:
+Obsidian Chat embeds Kilo CLI as a sidebar chat interface:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -61,7 +61,7 @@ Claudian embeds Kilo CLI as a sidebar chat interface:
 ### How It Works
 
 ```
-User Input → Claudian Plugin → kilo run "prompt" --model "model"
+User Input → Obsidian Chat Plugin → kilo run "prompt" --model "model"
                                         ↓
                                Kilo CLI (local)
                                         ↓
@@ -93,7 +93,7 @@ for await (const chunk of child.stdout) {
 ## User Experience
 
 ### Onboarding Flow
-1. Install Claudian from Obsidian Community Plugins
+1. Install Obsidian Chat from Obsidian Community Plugins
 2. Plugin detects Kilo CLI (or prompts install: `npm install -g kilo-code`)
 3. Select "Kilo" from provider dropdown
 4. Start chatting
@@ -108,7 +108,7 @@ for await (const chunk of child.stdout) {
 
 ## Why Kilo?
 
-### For Claudian Users
+### For Obsidian Chat Users
 - **Model Choice**: Access to 100+ models through single interface
 - **Free Tier**: Trinity Large Preview, GLM-4.7, and others at no cost
 - **Quality**: State-of-the-art models for writing tasks
