@@ -122,8 +122,3 @@ for await (const chunk of child.stdout) {
 
 ---
 
-
-## Links
-
-- **GitHub**: https://github.com/muddlebee/obsidian-chat/tree/codex-cli
-- **Demo Video**: [Link to demo]
