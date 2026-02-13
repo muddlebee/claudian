@@ -120,5 +120,3 @@ for await (const chunk of child.stdout) {
 - **Stickiness**: Daily active usage in users' primary workspace
 - **Community**: Tap into passionate Obsidian community
 
----
-
